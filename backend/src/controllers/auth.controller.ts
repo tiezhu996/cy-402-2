@@ -16,19 +16,19 @@ const registerSchema = z.object({
   phone: z.string().optional()
 });
 
-export async function login(req: Request, res: Response) {
+export async function login(req: Request, res: Response): Promise<void> {
   const input = loginSchema.parse(req.body);
-  const data = await authService.login(input.email, input.password);
+  const data: Awaited<ReturnType<typeof authService.login>> = await authService.login(input.email, input.password);
   res.json({ data });
 }
 
-export async function me(req: Request, res: Response) {
+export async function me(req: Request, res: Response): Promise<void> {
   res.json({ data: req.user });
 }
 
-export async function register(req: Request, res: Response) {
+export async function register(req: Request, res: Response): Promise<void> {
   const input = registerSchema.parse(req.body);
-  const data = await authService.registerUser(input);
+  const data: Awaited<ReturnType<typeof authService.registerUser>> = await authService.registerUser(input);
   res.status(201).json({ data });
 }
 

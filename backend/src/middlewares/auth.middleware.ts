@@ -7,10 +7,11 @@ type JwtPayload = {
   sub: string;
 };
 
-export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
+export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Missing bearer token" });
+    res.status(401).json({ message: "Missing bearer token" });
+    return;
   }
 
   try {
@@ -30,7 +31,8 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     });
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid token user" });
+      res.status(401).json({ message: "Invalid token user" });
+      return;
     }
 
     const roles = user.roles.map((item) => item.role.name);
@@ -45,9 +47,9 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       roles,
       permissions
     };
-    return next();
+    next();
   } catch {
-    return res.status(401).json({ message: "Invalid or expired token" });
+    res.status(401).json({ message: "Invalid or expired token" });
   }
 }
 

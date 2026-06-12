@@ -1,15 +1,49 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import type { RoleName } from "@prisma/client";
+import type { Prisma, RoleName } from "@prisma/client";
 import { env } from "../config/env";
 import { prisma } from "../utils/prisma";
 import { HttpError } from "../utils/http-error";
 
-export async function signUser(userId: string) {
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  licenseNo: string | null;
+  avatarUrl: string | null;
+  roles: string[];
+  permissions: string[];
+};
+
+export type LoginResult = {
+  token: string;
+  user: AuthUser;
+};
+
+export type RegisterUserInput = {
+  name: string;
+  email: string;
+  password: string;
+  role: RoleName;
+  licenseNo?: string;
+  phone?: string;
+};
+
+export type RegisterResult = {
+  id: string;
+  name: string;
+  email: string;
+  primaryRole: RoleName;
+  phone: string | null;
+  licenseNo: string | null;
+};
+
+export async function signUser(userId: string): Promise<string> {
   return jwt.sign({ sub: userId }, env.JWT_SECRET, { expiresIn: "8h" });
 }
 
-export async function login(email: string, password: string) {
+export async function login(email: string, password: string): Promise<LoginResult> {
   const user = await prisma.user.findUnique({
     where: { email },
     include: {
@@ -46,14 +80,7 @@ export async function login(email: string, password: string) {
   };
 }
 
-export async function registerUser(input: {
-  name: string;
-  email: string;
-  password: string;
-  role: RoleName;
-  licenseNo?: string;
-  phone?: string;
-}) {
+export async function registerUser(input: RegisterUserInput): Promise<RegisterResult> {
   const role = await prisma.role.findUnique({ where: { name: input.role } });
   if (!role) {
     throw new HttpError(400, "Role does not exist");

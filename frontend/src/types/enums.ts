@@ -1,8 +1,9 @@
 export type CaseType = "civil" | "criminal" | "administrative" | "commercial" | "labor";
-export type CaseStatus = "filed" | "investigating" | "hearing" | "closed" | "archived";
+export type CaseStatus = "filed" | "investigating" | "hearing" | "closing_pending" | "closed" | "archived";
 export type DocumentType = "complaint" | "defense" | "evidence" | "judgment" | "contract" | "other";
 export type BillingType = "attorney_fee" | "court_fee" | "travel_fee" | "other";
 export type BillingStatus = "pending" | "paid" | "invoiced" | "voided";
+export type ApprovalStatus = "pending" | "approved" | "rejected";
 
 export const CaseTypeLabels: Record<CaseType, string> = {
   civil: "民事",
@@ -16,6 +17,7 @@ export const CaseStatusLabels: Record<CaseStatus, string> = {
   filed: "立案",
   investigating: "调查",
   hearing: "开庭",
+  closing_pending: "待审批结案",
   closed: "结案",
   archived: "归档"
 };
@@ -43,3 +45,8 @@ export const BillingStatusLabels: Record<BillingStatus, string> = {
   voided: "已作废"
 };
 
+export const ApprovalStatusLabels: Record<ApprovalStatus, string> = {
+  pending: "待审批",
+  approved: "已通过",
+  rejected: "已驳回"
+};

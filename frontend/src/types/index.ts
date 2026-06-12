@@ -1,4 +1,4 @@
-import type { BillingStatus, BillingType, CaseStatus, CaseType, DocumentType } from "./enums";
+import type { ApprovalStatus, BillingStatus, BillingType, CaseStatus, CaseType, DocumentType } from "./enums";
 import type { PermissionKey, RoleName } from "./permissions";
 
 export type ApiResponse<T> = {
@@ -31,6 +31,20 @@ export type Client = {
   updatedAt: string;
 };
 
+export type ApprovalRecord = {
+  id: string;
+  caseId: string;
+  applicantId: string;
+  approverId?: string | null;
+  status: ApprovalStatus;
+  reason?: string | null;
+  rejectReason?: string | null;
+  submittedAt: string;
+  approvedAt?: string | null;
+  applicant?: Pick<User, "id" | "name" | "email" | "primaryRole">;
+  approver?: Pick<User, "id" | "name" | "email" | "primaryRole"> | null;
+};
+
 export type CaseRecord = {
   id: string;
   caseNo: string;
@@ -47,6 +61,7 @@ export type CaseRecord = {
   collaborators?: Array<{ user: User }>;
   documents?: DocumentRecord[];
   billings?: Billing[];
+  approvalRecords?: ApprovalRecord[];
   createdAt: string;
   updatedAt: string;
 };
@@ -95,4 +110,3 @@ export type AuditLog = {
   ip?: string | null;
   createdAt: string;
 };
-

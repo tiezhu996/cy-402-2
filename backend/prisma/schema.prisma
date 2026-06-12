@@ -25,8 +25,15 @@ enum CaseStatus {
   filed
   investigating
   hearing
+  closing_pending
   closed
   archived
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  rejected
 }
 
 enum DocumentType {
@@ -94,21 +101,23 @@ model RolePermission {
 }
 
 model User {
-  id                String             @id @default(uuid())
-  name              String
-  primaryRole       RoleName           @default(lawyer)
-  licenseNo         String?
-  email             String             @unique
-  phone             String?
-  avatarUrl         String?
-  passwordHash      String
-  roles             UserRole[]
-  mainCases         Case[]             @relation("MainLawyerCases")
-  collaboratedCases CaseCollaborator[]
-  documents         Document[]
-  auditLogs         AuditLog[]         @relation("AuditActor")
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  id                  String             @id @default(uuid())
+  name                String
+  primaryRole         RoleName           @default(lawyer)
+  licenseNo           String?
+  email               String             @unique
+  phone               String?
+  avatarUrl           String?
+  passwordHash        String
+  roles               UserRole[]
+  mainCases           Case[]             @relation("MainLawyerCases")
+  collaboratedCases   CaseCollaborator[]
+  documents           Document[]
+  auditLogs           AuditLog[]         @relation("AuditActor")
+  submittedApprovals  ApprovalRecord[]   @relation("ApprovalApplicant")
+  approvedApprovals   ApprovalRecord[]   @relation("ApprovalApprover")
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   @@map("users")
 }
@@ -130,23 +139,24 @@ model Client {
 }
 
 model Case {
-  id             String             @id @default(uuid())
-  caseNo         String             @unique
-  title          String
-  type           CaseType
-  status         CaseStatus         @default(filed)
-  acceptedAt     DateTime
-  closedAt       DateTime?
-  summary        String
-  clientId       String
-  mainLawyerId   String
-  client         Client             @relation(fields: [clientId], references: [id])
-  mainLawyer     User               @relation("MainLawyerCases", fields: [mainLawyerId], references: [id])
-  collaborators  CaseCollaborator[]
-  documents      Document[]
-  billings       Billing[]
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  id               String             @id @default(uuid())
+  caseNo           String             @unique
+  title            String
+  type             CaseType
+  status           CaseStatus         @default(filed)
+  acceptedAt       DateTime
+  closedAt         DateTime?
+  summary          String
+  clientId         String
+  mainLawyerId     String
+  client           Client             @relation(fields: [clientId], references: [id])
+  mainLawyer       User               @relation("MainLawyerCases", fields: [mainLawyerId], references: [id])
+  collaborators    CaseCollaborator[]
+  documents        Document[]
+  billings         Billing[]
+  approvalRecords  ApprovalRecord[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   @@index([status, type, acceptedAt])
   @@map("cases")
@@ -193,6 +203,24 @@ model Billing {
 
   @@index([status, type, createdAt])
   @@map("billings")
+}
+
+model ApprovalRecord {
+  id            String         @id @default(uuid())
+  caseId        String
+  applicantId   String
+  approverId    String?
+  status        ApprovalStatus @default(pending)
+  reason        String?
+  rejectReason  String?
+  submittedAt   DateTime       @default(now())
+  approvedAt    DateTime?
+  caseRef       Case           @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  applicant     User           @relation("ApprovalApplicant", fields: [applicantId], references: [id])
+  approver      User?          @relation("ApprovalApprover", fields: [approverId], references: [id])
+
+  @@index([caseId, status, submittedAt])
+  @@map("approval_records")
 }
 
 model AuditLog {

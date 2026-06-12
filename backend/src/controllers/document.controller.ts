@@ -11,8 +11,8 @@ const createDocumentSchema = z.object({
   caseId: z.string().uuid()
 });
 
-export async function list(req: Request, res: Response) {
-  const data = await documentService.listDocuments({
+export async function list(req: Request, res: Response): Promise<void> {
+  const data: Awaited<ReturnType<typeof documentService.listDocuments>> = await documentService.listDocuments({
     caseId: typeof req.query.caseId === "string" ? req.query.caseId : undefined,
     fileType: typeof req.query.fileType === "string" ? documentTypeSchema.parse(req.query.fileType) : undefined,
     q: typeof req.query.q === "string" ? req.query.q : undefined
@@ -20,13 +20,14 @@ export async function list(req: Request, res: Response) {
   res.json({ data });
 }
 
-export async function upload(req: Request, res: Response) {
+export async function upload(req: Request, res: Response): Promise<void> {
   const input = createDocumentSchema.parse(req.body);
   const fileUrl = req.file ? `/uploads/${req.file.filename}` : input.fileUrl;
   if (!fileUrl) {
-    return res.status(400).json({ message: "file or fileUrl is required" });
+    res.status(400).json({ message: "file or fileUrl is required" });
+    return;
   }
-  const data = await documentService.createDocument({
+  const data: Awaited<ReturnType<typeof documentService.createDocument>> = await documentService.createDocument({
     title: input.title || req.file?.originalname || "未命名文档",
     fileType: input.fileType,
     fileUrl,
@@ -36,8 +37,10 @@ export async function upload(req: Request, res: Response) {
   res.status(201).json({ data });
 }
 
-export async function remove(req: Request, res: Response) {
-  const data = await documentService.deleteDocument(req.params.id);
+export async function remove(req: Request, res: Response): Promise<void> {
+  const data: Awaited<ReturnType<typeof documentService.deleteDocument>> = await documentService.deleteDocument(
+    req.params.id
+  );
   res.json({ data });
 }
 

@@ -12,29 +12,35 @@ const clientSchema = z.object({
   note: z.string().optional()
 });
 
-export async function list(req: Request, res: Response) {
+export async function list(req: Request, res: Response): Promise<void> {
   const search = typeof req.query.q === "string" ? req.query.q : undefined;
-  const data = await clientService.listClients(search);
+  const data: Awaited<ReturnType<typeof clientService.listClients>> = await clientService.listClients(search);
   res.json({ data });
 }
 
-export async function detail(req: Request, res: Response) {
-  const data = await clientService.getClient(req.params.id);
+export async function detail(req: Request, res: Response): Promise<void> {
+  const data: Awaited<ReturnType<typeof clientService.getClient>> = await clientService.getClient(req.params.id);
   if (!data) {
     throw new HttpError(404, "Client not found");
   }
   res.json({ data });
 }
 
-export async function create(req: Request, res: Response) {
+export async function create(req: Request, res: Response): Promise<void> {
   const input = clientSchema.parse(req.body);
-  const data = await clientService.createClient({ ...input, email: input.email || null });
+  const data: Awaited<ReturnType<typeof clientService.createClient>> = await clientService.createClient({
+    ...input,
+    email: input.email || null
+  });
   res.status(201).json({ data });
 }
 
-export async function update(req: Request, res: Response) {
+export async function update(req: Request, res: Response): Promise<void> {
   const input = clientSchema.partial().parse(req.body);
-  const data = await clientService.updateClient(req.params.id, { ...input, email: input.email || null });
+  const data: Awaited<ReturnType<typeof clientService.updateClient>> = await clientService.updateClient(
+    req.params.id,
+    { ...input, email: input.email || null }
+  );
   res.json({ data });
 }
 
